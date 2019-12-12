@@ -1,0 +1,28 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+url = 'https://news.google.com/search?q=semiconductor%20test%20emerging%20when%3A7d&hl=en-US&gl=US&ceid=US%3Aen'
+req = requests.get(url)
+soup = BeautifulSoup(req.content, 'html.parser')
+parags = soup.find_all('article',{'class':'MQsxIb xTewfe R7GTQ keNKEd j7vNaf Cc0Z5d EjqUne'})
+dictNews = {}
+for artcl in parags:
+    title = artcl.h3.text
+    #print('Title: ',title)
+    url2 = 'https://news.google.com'+ artcl.a['href'][1:]
+    req2 = requests.get(url2)
+    soup2 = BeautifulSoup(req2.content, 'html.parser')
+    #clean and group news' paragraphs
+    paragLst = []
+    for parag in soup2.find_all('p'):
+        paragClean = parag.text.encode('charmap','ignore').decode('utf-8','ignore').encode('ascii', 'ignore').decode('utf-8','ignore')
+        #print(paragClean)
+        paragLst.append(paragClean)
+    #print(''.join(paragLst))
+    #print('----------------------------------------------------------------------------------------')
+    dictNews[title] = ''.join(paragLst)
+#into csv
+w = csv.writer(open("output2.csv", "w"))
+for key, val in dictNews.items():
+  w.writerow([key, val])
